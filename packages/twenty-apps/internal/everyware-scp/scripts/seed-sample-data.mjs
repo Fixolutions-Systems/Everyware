@@ -132,12 +132,13 @@ const buildJob = ({
         : null,
     closedAt: isClosed ? hoursAgo(createdHoursAgo - 1.4) : null,
     rating: isClosed ? rating : null,
+    revisitRequestedAt: status === 'REVISIT' ? hoursAgo(0.25) : null,
   };
 };
 
 const TODAY_JOBS = [
-  ['EW-1047', 'Washing machine', 'Dwarka Sec 10', 'REVISIT', 'Technician 1', 5, 4, 0, 'ONLINE', null, 28.59, 77.03],
-  ['EW-1058', 'AC (split)', 'Janakpuri', 'NEW', null, 0.2, 6, 0, 'ONLINE', null, 28.62, 77.08],
+  ['EW-1047', 'Washing machine', 'Dwarka Sec 10', 'REVISIT', null, 5, 4, 0, 'ONLINE', null, 28.59, 77.03],
+  ['EW-1058', 'AC (split)', 'Janakpuri', 'NEW', null, 0.1, 6, 0, 'ONLINE', null, 28.62, 77.08],
   ['EW-1057', 'Geyser', 'Palam', 'NEW', null, 0.3, 5, 0, 'CASH', null, 28.585, 77.09],
   ['EW-1055', 'Refrigerator', 'Uttam Nagar', 'ACCEPTED', 'Technician 3', 0.9, 3, 0, 'CASH', null, 28.605, 77.055],
   ['EW-1054', 'Microwave', 'Dwarka Sec 3', 'ACCEPTED', 'Technician 6', 1, 4, 0, 'ONLINE', null, 28.6, 77.035],
