@@ -194,6 +194,17 @@ const JobRow = ({
   onToggle: () => void;
 }) => {
   const isRevisit = job.status === 'REVISIT';
+  const isNew = job.status === 'NEW';
+  const rowSize = isRevisit
+    ? { height: '68px', fontSize: '17px' }
+    : isNew
+      ? { height: '58px', fontSize: '15px' }
+      : { height: '44px', fontSize: '14px' };
+  const background = isRevisit
+    ? '#DC2626'
+    : isNew
+      ? isOpen ? '#D6E6FF' : '#EBF2FF'
+      : isOpen ? '#E6FAFF' : COLORS.card;
   const textColor = isRevisit ? '#FFFFFF' : COLORS.text;
   const mutedColor = isRevisit ? 'rgba(255,255,255,0.9)' : COLORS.muted;
 
@@ -201,7 +212,7 @@ const JobRow = ({
     <div
       style={{
         borderBottom: `1px solid ${isRevisit ? 'rgba(255,255,255,0.3)' : COLORS.border}`,
-        background: isRevisit ? '#DC2626' : isOpen ? '#E6FAFF' : COLORS.card,
+        background,
       }}
     >
       <button
@@ -214,7 +225,7 @@ const JobRow = ({
           alignItems: 'center',
           gap: '12px',
           width: '100%',
-          height: '48px',
+          height: rowSize.height,
           padding: '0 16px',
           border: 0,
           background: 'transparent',
@@ -227,7 +238,7 @@ const JobRow = ({
         <span style={{ fontFamily: MONO, fontSize: '12px', color: mutedColor }}>
           {job.complaintId}
         </span>
-        <span style={{ fontSize: '14px', fontWeight: 600 }}>{job.appliance}</span>
+        <span style={{ fontSize: rowSize.fontSize, fontWeight: isRevisit ? 700 : 600 }}>{job.appliance}</span>
         <span style={{ fontSize: '13px', color: mutedColor }}>{job.area}</span>
         <span
           style={{
