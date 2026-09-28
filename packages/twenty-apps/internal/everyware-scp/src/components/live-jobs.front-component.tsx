@@ -178,18 +178,10 @@ const fetchLiveData = async (windowHours: number) => {
   return { jobs, technicians };
 };
 
-const StatusDot = ({ color, size = 8 }: { color: string; size?: number }) => (
-  <span
-    style={{
-      display: 'inline-block',
-      width: `${size}px`,
-      height: `${size}px`,
-      borderRadius: '50%',
-      background: color,
-      boxShadow: '0 0 0 1px rgba(15,23,42,0.15)',
-      flexShrink: 0,
-    }}
-  />
+const StatusDot = ({ color, size = 10 }: { color: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 10 10" aria-hidden="true" style={{ flexShrink: 0 }}>
+    <circle cx="5" cy="5" r="4.5" fill={color} stroke="rgba(15,23,42,0.15)" strokeWidth="0.6" />
+  </svg>
 );
 
 const JobRow = ({
@@ -354,13 +346,20 @@ const LiveMap = ({
                 width: `${size}px`,
                 height: `${size}px`,
                 margin: `-${size / 2}px 0 0 -${size / 2}px`,
-                borderRadius: '50%',
-                boxSizing: 'border-box',
-                border: `${isSelected ? 3 : 2}px solid ${isSelected ? COLORS.text : '#FFFFFF'}`,
-                boxShadow: '0 1px 3px rgba(15,23,42,0.25)',
-                background: STATUS_COLOR[job.status],
+                display: 'block',
               }}
-            />
+            >
+              <svg width={size} height={size} viewBox="0 0 20 20" aria-hidden="true">
+                <circle
+                  cx="10"
+                  cy="10"
+                  r={isSelected ? 8 : 8.5}
+                  fill={STATUS_COLOR[job.status]}
+                  stroke={isSelected ? COLORS.text : '#FFFFFF'}
+                  strokeWidth={isSelected ? 3 : 3}
+                />
+              </svg>
+            </span>
           );
         })}
       {technicians.map((technician) => (
