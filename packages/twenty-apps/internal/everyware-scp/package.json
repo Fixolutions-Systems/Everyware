@@ -26,5 +26,9 @@
     "twenty-client-sdk": "2.31.0",
     "twenty-sdk": "2.31.0",
     "typescript": "^5.9.3"
-  }
+  },
+  "frontComponentSharedDependencies": [
+    "react",
+    "react-dom/client"
+  ]
 }
