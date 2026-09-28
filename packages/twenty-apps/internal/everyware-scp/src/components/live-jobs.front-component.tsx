@@ -9,6 +9,14 @@ const REFRESH_INTERVAL_MS = 10_000;
 // Placeholder threshold until ops confirms the real number.
 const UNASSIGNED_ALERT_MINUTES = 10;
 const ALERT_SNOOZE_MS = 30_000;
+
+// Both styles stay available until the team picks one; see the screen spec.
+type AlertStyle = 'BANNER' | 'BLOCKER';
+
+const ALERT_STYLES: { key: AlertStyle; label: string }[] = [
+  { key: 'BANNER', label: 'Banner' },
+  { key: 'BLOCKER', label: 'Blocker' },
+];
 const OVERDUE_RED = '#DC2626';
 const REVISIT_ORANGE = '#EA580C';
 const NEW_TINT = '#EBF2FF';
@@ -457,11 +465,13 @@ const AssignPanel = ({
 const UnattendedAlerts = ({
   jobs,
   now,
+  alertStyle,
   onAttend,
   onDismiss,
 }: {
   jobs: Job[];
   now: number;
+  alertStyle: AlertStyle;
   onAttend: (jobId: string) => void;
   onDismiss: (jobId: string) => void;
 }) => {
@@ -469,23 +479,48 @@ const UnattendedAlerts = ({
     return null;
   }
   const isBright = Math.floor(now / 600) % 2 === 0;
+  const isBlocker = alertStyle === 'BLOCKER';
+  const visibleCount = isBlocker ? 5 : 3;
 
-  return (
+  const stack = (
     <div
       role="alert"
-      style={{
-        position: 'absolute',
-        top: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '560px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-        zIndex: 10,
-      }}
+      style={
+        isBlocker
+          ? {
+              width: '620px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              padding: '20px',
+              borderRadius: '16px',
+              background: COLORS.card,
+              boxShadow: '0 24px 60px rgba(15,23,42,0.4)',
+            }
+          : {
+              position: 'absolute',
+              top: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '560px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              zIndex: 10,
+            }
+      }
     >
-      {jobs.slice(0, 3).map((job) => {
+      {isBlocker && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '4px' }}>
+          <span style={{ fontSize: '20px', fontWeight: 800, color: COLORS.text }}>
+            {jobs.length} {jobs.length === 1 ? 'job needs' : 'jobs need'} a technician
+          </span>
+          <span style={{ fontSize: '13px', color: COLORS.muted }}>
+            Attend or dismiss to get back to the queue.
+          </span>
+        </div>
+      )}
+      {jobs.slice(0, visibleCount).map((job) => {
         const isRevisit = job.status === 'REVISIT';
         const color = isRevisit ? REVISIT_ORANGE : OVERDUE_RED;
         return (
@@ -548,11 +583,31 @@ const UnattendedAlerts = ({
           </div>
         );
       })}
-      {jobs.length > 3 && (
+      {jobs.length > visibleCount && (
         <span style={{ alignSelf: 'center', fontSize: '13px', fontWeight: 700, color: OVERDUE_RED }}>
-          +{jobs.length - 3} more waiting
+          +{jobs.length - visibleCount} more waiting
         </span>
       )}
+    </div>
+  );
+
+  if (!isBlocker) {
+    return stack;
+  }
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 20,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(15,23,42,0.6)',
+      }}
+    >
+      {stack}
     </div>
   );
 };
@@ -683,6 +738,7 @@ const LiveJobs = () => {
   const [assigning, setAssigning] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [snoozedUntil, setSnoozedUntil] = useState<Record<string, number>>({});
+  const [alertStyle, setAlertStyle] = useState<AlertStyle>('BANNER');
 
   const refresh = useCallback(async () => {
     try {
@@ -828,8 +884,32 @@ const LiveJobs = () => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
-          <span style={labelStyle(COLORS.panelMuted)}>SCP // Live jobs · auto-routed · view only</span>
+          <span style={labelStyle(COLORS.panelMuted)}>SCP // Live jobs</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div role="group" aria-label="Alert style" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={labelStyle(COLORS.panelMuted)}>Alerts</span>
+              {ALERT_STYLES.map((style) => (
+                <button
+                  key={style.key}
+                  type="button"
+                  aria-pressed={style.key === alertStyle}
+                  onClick={() => setAlertStyle(style.key)}
+                  style={{
+                    height: '32px',
+                    padding: '0 10px',
+                    borderRadius: '12px',
+                    border: `1px solid ${style.key === alertStyle ? COLORS.action : 'rgba(255,255,255,0.15)'}`,
+                    background: style.key === alertStyle ? 'rgba(0,184,230,0.25)' : 'transparent',
+                    color: style.key === alertStyle ? '#FFFFFF' : COLORS.panelMuted,
+                    fontFamily: MONO,
+                    fontSize: '11px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {style.label}
+                </button>
+              ))}
+            </div>
             <div role="group" aria-label="Time window" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={labelStyle(COLORS.panelMuted)}>Window</span>
               {TIME_WINDOWS.map((timeWindow, index) => (
@@ -980,6 +1060,7 @@ const LiveJobs = () => {
       <UnattendedAlerts
         jobs={alertJobs}
         now={now}
+        alertStyle={alertStyle}
         onAttend={handleAttend}
         onDismiss={handleDismiss}
       />
