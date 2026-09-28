@@ -480,7 +480,7 @@ const UnattendedAlerts = ({
   }
   const isBright = Math.floor(now / 600) % 2 === 0;
   const isBlocker = alertStyle === 'BLOCKER';
-  const visibleCount = isBlocker ? 5 : 3;
+  const visibleCount = isBlocker ? 1 : 3;
 
   const stack = (
     <div
@@ -491,11 +491,6 @@ const UnattendedAlerts = ({
               width: '620px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '10px',
-              padding: '20px',
-              borderRadius: '16px',
-              background: COLORS.card,
-              boxShadow: '0 24px 60px rgba(15,23,42,0.4)',
             }
           : {
               position: 'absolute',
@@ -510,16 +505,6 @@ const UnattendedAlerts = ({
             }
       }
     >
-      {isBlocker && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '4px' }}>
-          <span style={{ fontSize: '20px', fontWeight: 800, color: COLORS.text }}>
-            {jobs.length} {jobs.length === 1 ? 'job needs' : 'jobs need'} a technician
-          </span>
-          <span style={{ fontSize: '13px', color: COLORS.muted }}>
-            Attend or dismiss to get back to the queue.
-          </span>
-        </div>
-      )}
       {jobs.slice(0, visibleCount).map((job) => {
         const isRevisit = job.status === 'REVISIT';
         const color = isRevisit ? REVISIT_ORANGE : OVERDUE_RED;
@@ -583,7 +568,7 @@ const UnattendedAlerts = ({
           </div>
         );
       })}
-      {jobs.length > visibleCount && (
+      {!isBlocker && jobs.length > visibleCount && (
         <span style={{ alignSelf: 'center', fontSize: '13px', fontWeight: 700, color: OVERDUE_RED }}>
           +{jobs.length - visibleCount} more waiting
         </span>
